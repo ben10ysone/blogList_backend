@@ -4,16 +4,21 @@
   "description": "backend",
   "main": "index.js",
   "scripts": {
-    "dev": "node --watch index.js",
-    "start": "node index.js",
-    "test": "node --test",
-    "push:full": "git add . && read -p 'Enter commit message: ' msg && git commit -m \"$msg\" && git push"
+    "dev": "cross-env NODE_ENV=development node --watch index.js",
+    "start": "cross-env NODE_ENV=production node index.js",
+    "test": "cross-env NODE_ENV=test node --test",
+    "push:full": "git add . && read -p 'Enter commit message: ' msg && git commit -m \"$msg\" && git push",
+    "test:small": "npm test -- --test-only"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cross-env": "^7.0.3",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "mongoose": "^8.16.4"
+  },
+  "devDependencies": {
+    "supertest": "^7.1.4"
   }
 }
