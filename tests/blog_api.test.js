@@ -24,13 +24,10 @@ let initialBLogs=[
 
 beforeEach(async () => {
     await Blog.deleteMany({})
-    console.log('deleted')
     let blog1=new Blog(initialBLogs[0])
     await blog1.save()
-    console.log(`saved ${blog1}`)
     let blog2=new Blog(initialBLogs[1])
     await blog2.save()
-    console.log(`saved ${blog2}`)
 })
 
 
@@ -113,7 +110,19 @@ test('checking for title present or not works', async () => {
         .expect(400)
 
 })
+
+test.only("deletion of blog works", async () => {
+    const blogsAtStart = await api.get('/api/blogs')
+    console.log(blogsAtStart.body)
+    const blogToDelete=blogsAtStart.body[0]
+
+    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+
+    const blogsAtEnd=await api.get('/api/blogs')
+    assert.strictEqual(blogsAtStart.body.length-1, blogsAtEnd.body.length)
+}) 
+
+
 after(async () => {
     mongoose.connection.close()
 })
-
