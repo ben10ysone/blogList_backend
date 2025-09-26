@@ -7,6 +7,7 @@ userRouter.post('/', async (request, response) => {
     const minLength=3
 
     if (!password){
+        console.log(password)
         return response.status(400).json({error: 'Please enter a non-empty password'})
     } else if (password.length<=minLength){
         return response.status(400).json({error: 'password should have atleast 4 characters'})
@@ -26,7 +27,7 @@ userRouter.post('/', async (request, response) => {
 })
 
 userRouter.get('/', async (request, response) => {
-    const users = await User.find({})
+    const users = await User.find({}).populate('blogs', { url:1, title:1, author: 1})
 
     response.json(users)
 })

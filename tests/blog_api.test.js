@@ -6,6 +6,7 @@ const supertest = require('supertest')
 const Blog = require('../models/blog')
 const User =  require('../models/user')
 const bcrypt =  require('bcrypt')
+const helper = require('./test_helper')
 
 const api = supertest(app)
 
@@ -132,26 +133,64 @@ describe("running tests for users", () => {
         await User.deleteMany({})
 
         const passwordHash = await bcrypt.hash('sekret', 10)
-        const user = new User({username: 'papa', passwordHash, 'name': 'arnav'})
+        const user = new User({username: 'papa', passwordHash, name: 'arnav'})
 
         await user.save()
     })
 
+    test("same username is not added", async () => {
+        const usersAtStart = await helper.usersInDb()
+        
+        const user = {
+            username: 'papa', 
+            password:"hehehe", 
+            name: 'arnav',
+        }
+
+        const result = await api.post('/api/users')
+                            .send(user)
+                            .expect(400)
+        
+        const usersAtEnd = await helper.usersInDb()
+        assert(result.body.error.includes('expected `username` to be unique'))
+        assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+    })
+
     test("Check if user with username with less than 3 characters is added", async () => {
+        const usersAtStart = await helper.usersInDb()
 
-        const user = new User({ username: 'ar', password: 'test', name:'hello' })
+        const user = { 
+            username: 'ar', 
+            password: 'test', 
+            name:'hello' 
+        }
 
-        await api.post('/api/users')
-                .send(user)
-                .expect(400)
+        const result = await api.post('/api/users')
+                            .send(user)
+                            .expect(400)
+        const usersAtEnd = await helper.usersInDb()
+        assert(result.body.error.includes('User validation failed'))
+        assert.strictEqual(usersAtEnd.length, usersAtStart.length)
     })
 
     test("Check for empty password length <3 get rejected", async () => {
-        const user= new User({ username: 'ar', password: 'tes', name: 'hello' })
+        const usersAtStart = await helper.usersInDb()
 
-        await api.post('/api/users')
-                .send(user)
-                .expect(400)
+        const user= { 
+            username: 'arna', 
+            password: 'tes', 
+            name: 'hello', 
+        }
+
+        const result = await api.post('/api/users')
+                            .send(user)
+                            .expect(400)
+        const usersAtEnd = await helper.usersInDb()
+        assert.ok(
+            result.body.error.includes('Please enter a non-empty password') ||
+            result.body.error.includes('password should have atleast 4 characters')
+        )
+        assert.strictEqual(usersAtEnd.length, usersAtStart.length)        
     })
 })
 
